@@ -3,6 +3,7 @@
   <ItemGroup>
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="Utility.cpp" />
+    <ClCompile Include="Taskbar\Taskbar.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Plugin.rc" />
@@ -10,5 +11,6 @@
   <ItemGroup>
     <ClInclude Include="version.h" />
     <ClInclude Include="Utility.h" />
+    <ClInclude Include="Taskbar\Taskbar.h" />
   </ItemGroup>
 </Project>
