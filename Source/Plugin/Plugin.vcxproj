@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Plugin.cpp" />
+    <ClCompile Include="Taskbar\Taskbar.cpp" />
     <ClCompile Include="Utility.cpp" />
     <ClCompile Include="VirtualDesktops\VirtualDesktop.cpp" />
   </ItemGroup>
@@ -27,6 +28,7 @@
     <ResourceCompile Include="Plugin.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Taskbar\Taskbar.h" />
     <ClInclude Include="Utility.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="VirtualDesktops\VirtualDesktop.h" />
@@ -124,7 +126,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>..\API\x32\Rainmeter.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\API\x32\Rainmeter.lib;Mincore.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <ProfileGuidedDatabase>$(OutDir)$(TargetName).pgd</ProfileGuidedDatabase>
     </Link>
@@ -154,7 +156,7 @@ echo f | xcopy /R /Y "$(OutputPath)$(TargetFileName)" "%appdata%\Rainmeter\Plugi
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>..\API\x64\Rainmeter.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\API\x64\Rainmeter.lib;Mincore.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <ProfileGuidedDatabase>$(OutDir)$(TargetName).pgd</ProfileGuidedDatabase>
     </Link>
@@ -192,7 +194,7 @@ echo f | xcopy /R /Y "$(OutputPath)$(TargetFileName)" "%appdata%\Rainmeter\Plugi
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <MergeSections>.rdata=.text</MergeSections>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>..\API\x32\Rainmeter.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\API\x32\Rainmeter.lib;Mincore.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <ProfileGuidedDatabase>$(OutDir)$(TargetName).pgd</ProfileGuidedDatabase>
     </Link>
@@ -224,7 +226,7 @@ echo f | xcopy /R /Y "$(OutputPath)$(TargetFileName)" "%appdata%\Rainmeter\Plugi
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <MergeSections>.rdata=.text</MergeSections>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>..\API\x64\Rainmeter.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\API\x64\Rainmeter.lib;Mincore.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <ProfileGuidedDatabase>$(OutDir)$(TargetName).pgd</ProfileGuidedDatabase>
     </Link>

@@ -3,9 +3,13 @@
   <ItemGroup>
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="Utility.cpp" />
+<<<<<<< HEAD
     <ClCompile Include="VirtualDesktops\VirtualDesktop.cpp">
       <Filter>VirtualDesktop</Filter>
     </ClCompile>
+=======
+    <ClCompile Include="Taskbar\Taskbar.cpp" />
+>>>>>>> 50e082a4b93fca3667ce2b61f6104bcc74c7c131
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Plugin.rc" />
@@ -13,6 +17,7 @@
   <ItemGroup>
     <ClInclude Include="version.h" />
     <ClInclude Include="Utility.h" />
+<<<<<<< HEAD
     <ClInclude Include="VirtualDesktops\VirtualDesktop.h">
       <Filter>VirtualDesktop</Filter>
     </ClInclude>
@@ -21,5 +26,8 @@
     <Filter Include="VirtualDesktop">
       <UniqueIdentifier>{a3fe5101-abf0-457e-b2dd-d733ee24459b}</UniqueIdentifier>
     </Filter>
+=======
+    <ClInclude Include="Taskbar\Taskbar.h" />
+>>>>>>> 50e082a4b93fca3667ce2b61f6104bcc74c7c131
   </ItemGroup>
 </Project>
