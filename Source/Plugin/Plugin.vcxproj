@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="Utility.cpp" />
+    <ClCompile Include="VirtualDesktops\VirtualDesktop.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Plugin.rc" />
@@ -28,6 +29,7 @@
   <ItemGroup>
     <ClInclude Include="Utility.h" />
     <ClInclude Include="version.h" />
+    <ClInclude Include="VirtualDesktops\VirtualDesktop.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{64FDEE97-6B7E-40E5-A489-ECA322825BC8}</ProjectGuid>

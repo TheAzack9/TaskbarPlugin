@@ -3,6 +3,9 @@
   <ItemGroup>
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="Utility.cpp" />
+    <ClCompile Include="VirtualDesktops\VirtualDesktop.cpp">
+      <Filter>VirtualDesktop</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Plugin.rc" />
@@ -10,5 +13,13 @@
   <ItemGroup>
     <ClInclude Include="version.h" />
     <ClInclude Include="Utility.h" />
+    <ClInclude Include="VirtualDesktops\VirtualDesktop.h">
+      <Filter>VirtualDesktop</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="VirtualDesktop">
+      <UniqueIdentifier>{a3fe5101-abf0-457e-b2dd-d733ee24459b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>
