@@ -150,6 +150,109 @@ public:
 
 };
 
+
+class virtualDesktopNotification : public IVirtualDesktopNotification
+{
+private:
+	ULONG _referenceCount;
+public:
+	//Inherited from IVirtualDesktopNotification, most of these are not implemented
+	virtualDesktopNotification(IVirtualDesktop *currDesktop, GUID currDesktopID, UINT desktopCount)
+	{
+		this->currDesktop = currDesktop;
+		this->currDesktopID = currDesktopID;
+		this->desktopCount = desktopCount;
+	}
+#pragma region Methods replicating originals
+	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void ** ppvObject) override
+	{
+		// Always set out parameter to NULL, validating it first.
+		if (!ppvObject)
+			return E_INVALIDARG;
+		*ppvObject = NULL;
+
+		if (riid == IID_IUnknown || riid == __uuidof(IVirtualDesktopNotification))
+		{
+			// Increment the reference count and return the pointer.
+			*ppvObject = (LPVOID)this;
+			AddRef();
+			return S_OK;
+		}
+		return E_NOINTERFACE;
+	}
+
+	virtual ULONG STDMETHODCALLTYPE AddRef() override
+	{
+		return InterlockedIncrement(&_referenceCount);
+	}
+
+	virtual ULONG STDMETHODCALLTYPE Release() override
+	{
+		ULONG result = InterlockedDecrement(&_referenceCount);
+		if (result == 0)
+		{
+			delete this;
+		}
+		return 0;
+	}
+#pragma endregion
+#pragma region Unimplmented since unused
+	virtual HRESULT STDMETHODCALLTYPE VirtualDesktopDestroyBegin(IVirtualDesktop *pDesktopDestroyed, IVirtualDesktop * pDesktopFallback)
+	{
+		return E_NOTIMPL;
+	}
+
+	virtual HRESULT STDMETHODCALLTYPE VirtualDesktopDestroyFailed(IVirtualDesktop *pDesktopDestroyed, IVirtualDesktop * pDesktopFallback) 
+	{
+		return E_NOTIMPL;
+	}
+#pragma endregion
+	
+	//I may implement this once I figure out what it does
+	virtual HRESULT STDMETHODCALLTYPE ViewVirtualDesktopChanged(IApplicationView * pView) override
+	{
+		return E_NOTIMPL;
+	}
+
+	virtual HRESULT STDMETHODCALLTYPE VirtualDesktopCreated(IVirtualDesktop *desktopNew) override
+	{
+		++desktopCount;
+		return S_OK;
+	}
+	virtual HRESULT STDMETHODCALLTYPE VirtualDesktopDestroyed(IVirtualDesktop *desktopDestroyed, IVirtualDesktop *desktopFallback) override
+	{
+		--desktopCount;
+		return S_OK;
+	}
+	virtual HRESULT STDMETHODCALLTYPE CurrentVirtualDesktopChanged(IVirtualDesktop *desktopOld, IVirtualDesktop *desktopCurr) override
+	{
+		currDesktop = desktopCurr;
+
+		//Get GUID here because getting it in the conversion later it fails when > virtual desktop when rainmeter boots and then it is only done once per change
+		currDesktop->GetID(&currDesktopID);
+
+		return S_OK;
+	}
+
+	IVirtualDesktop* getCurrDesktop()
+	{
+		return currDesktop;
+	}
+	GUID getCurrDesktopID()
+	{
+		return currDesktopID;
+	}
+	UINT getDesktopCount()
+	{
+		return desktopCount;
+	}
+private:
+	IVirtualDesktop *currDesktop;
+	GUID currDesktopID = GUID();
+	UINT desktopCount = 0;
+
+};
+
 EXTERN_C const IID IID_IVirtualDesktopNotificationService;
 
 MIDL_INTERFACE("0CD45E71-D927-4F15-8B0A-8FEF525337BF")
@@ -166,47 +269,10 @@ public:
 
 class VirtualDesktop
 {
+	friend class virtualDesktopNotification;
 public:
-	VirtualDesktop()
-	{
-		//Setup desktop manager
-		HRESULT hr = ::CoCreateInstance(CLSID_ImmersiveShell, NULL, CLSCTX_LOCAL_SERVER, __uuidof(IServiceProvider), (PVOID*)&serviceProvider);
-		if (SUCCEEDED(hr))
-		{
-			hr = serviceProvider->QueryService(CLSID_VirtualDesktopAPI_Unknown, &desktopManagerInternal);
-			if (FAILED(hr))
-			{
-				RmLog(LOG_ERROR, L"Unable to get an instance of the internal desktop manager, the internal API must have changed");
-			}
-
-			hr = serviceProvider->QueryService(__uuidof(IVirtualDesktopManager), &desktopManager);
-			if (FAILED(hr))
-			{
-				RmLog(LOG_ERROR, L"Unable to get an instance of the desktop manager, the API must have changed");
-			}
-		}
-		else
-		{
-			RmLog(LOG_ERROR, L"Unable to get an instance of the desktop service, the API must have changed");
-		}
-	}
-	void Reload(void* rm, double* maxValue);
-	double Update();
-	LPCWSTR GetString();
-	void ExecuteBang(LPCWSTR args);
-	void Finalize();
-private:
-	//Possible measure types
-	enum measureTypes
-	{
-		count = 0,
-		current = 1
-	};
-
-	//Virtual Desktop managers and services
-	IServiceProvider* serviceProvider;
-	IVirtualDesktopManagerInternal* desktopManagerInternal;
-	IVirtualDesktopManager* desktopManager;
+	VirtualDesktop();
+	~VirtualDesktop();
 
 	HRESULT createDesktop();
 	HRESULT destroyDesktop(IVirtualDesktop *desktop);
@@ -216,12 +282,24 @@ private:
 	HRESULT switchToDesktop(UINT desktopIndex);
 	HRESULT switchToDesktop(AdjacentDesktop direction);
 
+	UINT desktopToIndex(GUID desktopID);
+	UINT desktopToIndex(IVirtualDesktop *desktop);
+	IVirtualDesktop* indexToDesktop(int desktopIndex);
+
+	UINT getCurrentDesktop();
+	UINT getDesktopCount();
+
 	HRESULT getWindowDesktopId(HWND topLevelWindow, UINT *desktopIndex);
 	HRESULT getWindowDesktopId(HWND topLevelWindow, GUID *desktopID);
 
-	UINT desktopToIndex(GUID desktopID);
-	IVirtualDesktop* indexToDesktop(int desktopIndex);
+private:
 
-	measureTypes measureType = measureTypes::current;
+	//Virtual Desktop managers and services
+	IServiceProvider* serviceProvider;
+	IVirtualDesktopManagerInternal* desktopManagerInternal;
+	IVirtualDesktopManager* desktopManager;
+
+	IVirtualDesktopNotificationService* desktopNotificationService;
+	virtualDesktopNotification* desktopNotifications;
+	DWORD notificationCookie;
 };
-

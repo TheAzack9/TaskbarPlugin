@@ -5,185 +5,123 @@
 #include <algorithm>
 #include <cstdint>
 
-void VirtualDesktop::Reload(void* rm, double* maxValue)
+VirtualDesktop::VirtualDesktop()
 {
-	std::wstring typeString = RmReadString(rm, L"Type", L"Current", false);
-	std::transform(typeString.begin(), typeString.end(), typeString.begin(), ::tolower);
-	
-	if (typeString.compare(L"current") == 0)
+	//Setup desktop manager
+	HRESULT hr = ::CoCreateInstance(CLSID_ImmersiveShell, NULL, CLSCTX_LOCAL_SERVER, __uuidof(IServiceProvider), (PVOID*)&serviceProvider);
+	if (SUCCEEDED(hr))
 	{
-		measureType = measureTypes::current;
-	}
-	else if (typeString.compare(L"count") == 0)
-	{
-		measureType = measureTypes::count;
-	}
-}
-double VirtualDesktop::Update()
-{
-	try
-	{
-		if (desktopManagerInternal != nullptr)
+		//Init internal virtual desktop API
+		hr = serviceProvider->QueryService(CLSID_VirtualDesktopAPI_Unknown, &desktopManagerInternal);
+		if (FAILED(hr))
 		{
-			if (measureType == measureTypes::current)
+			RmLog(LOG_ERROR, L"Unable to get an instance of the internal desktop manager, the internal API must have changed");
+		}
+
+		//Init official virtual desktop API
+		hr = serviceProvider->QueryService(__uuidof(IVirtualDesktopManager), &desktopManager);
+		if (FAILED(hr))
+		{
+			RmLog(LOG_ERROR, L"Unable to get an instance of the desktop manager, the API must have changed");
+		}
+
+		//Init service for virtual dekstop notifying
+		hr = serviceProvider->QueryService(CLSID_IVirtualNotificationService, &desktopNotificationService);
+		if (FAILED(hr))
+		{
+			RmLog(LOG_ERROR, L"Unable to get an instance of the desktop manager notifier service, the API must have changed");
+		}
+		else
+		{
+			//Initialize internal variables 
+			IVirtualDesktop *currDesktop;
+			desktopManagerInternal->GetCurrentDesktop(&currDesktop);
+
+			GUID currDesktopID = GUID();
+			currDesktop->GetID(&currDesktopID);
+
+			UINT desktopCount;
+			desktopManagerInternal->GetCount(&desktopCount);
+
+			desktopNotifications = new virtualDesktopNotification(currDesktop, currDesktopID, desktopCount);
+
+			//Register for notifications
+			hr = desktopNotificationService->Register(desktopNotifications, &notificationCookie);
+			if (FAILED(hr))
 			{
-				//@TODO Replace polling this with listening and using internal objects
-				IVirtualDesktop *currDesktop;
-				desktopManagerInternal->GetCurrentDesktop(&currDesktop);
-				GUID currGUID = GUID();
-				currDesktop->GetID(&currGUID);
-
-				return desktopToIndex(currGUID);
+				RmLog(LOG_ERROR, L"Unable to register for virtual desktop changes");
 			}
-			else if (measureType == measureTypes::count)
-			{
-				UINT desktopCount = 1;
-				if (FAILED(desktopManagerInternal->GetCount(&desktopCount)))
-				{
-					RmLog(LOG_ERROR, L"Unable to get desktop count");
-				}
-
-				return desktopCount;
-			}
-
 		}
 	}
-	catch (std::exception& e)
+	else
 	{
-		std::wstringstream error;
-		error << e.what();
-
-		RmLog(LOG_ERROR, error.str().c_str());
-	}
-
-	return 0.0;
-}
-LPCWSTR VirtualDesktop::GetString()
-{
-	return NULL;
-}
-void VirtualDesktop::ExecuteBang(LPCWSTR args)
-{
-	//Full command with argument
-	std::wstring cmd = args;
-	std::transform(cmd.begin(), cmd.end(), cmd.begin(), ::tolower);
-
-	//Command argument or nil
-	std::wstring arg = cmd.find(L" ") != std::string::npos ? cmd.substr(cmd.find(L" ")) : L"";
-
-	if (cmd.find(L"setdesktop") != std::string::npos)
-	{
-		try
-		{
-			int desktopIndex = std::stoi(arg);
-			switchToDesktop(desktopIndex);
-		}
-		catch (const std::string e)
-		{
-			RmLog(LOG_ERROR, L"Unable to convert dekstop number to an integer");
-		}
-	}
-	else if (cmd.find(L"nextdesktop") != std::string::npos)
-	{
-		switchToDesktop(AdjacentDesktop::RightDirection);
-	}
-	else if (cmd.find(L"previousdesktop") != std::string::npos)
-	{
-		switchToDesktop(AdjacentDesktop::LeftDirection);
-	}
-	else if (cmd.find(L"createdesktop") != std::string::npos)
-	{
-		createDesktop();
-	}
-	else if (cmd.find(L"destroydesktop") != std::string::npos)
-	{
-		try
-		{
-			int desktopIndex = std::stoi(arg);
-			destroyDesktop(desktopIndex);
-		}
-		catch (const std::string e)
-		{
-			RmLog(LOG_ERROR, L"Unable to convert dekstop number to an integer");
-		}
+		RmLog(LOG_ERROR, L"Unable to get an instance of the desktop service, the API must have changed");
 	}
 }
-void VirtualDesktop::Finalize()
+
+VirtualDesktop::~VirtualDesktop()
 {
-	if (desktopManagerInternal != nullptr)
+	if (desktopManagerInternal)
 	{
 		//Release access to desktop manager
 		desktopManagerInternal->Release();
 		desktopManagerInternal = nullptr;
 	}
-	if (desktopManager != nullptr)
+	if (desktopManager)
 	{
 		//Release access to desktop manager
 		desktopManager->Release();
 		desktopManager = nullptr;
 	}
+	if (desktopNotificationService)
+	{
+		//Release access to desktop manager
+		desktopNotificationService->Unregister(notificationCookie);
+		desktopNotificationService->Release();
+		desktopNotificationService = nullptr;
+	}
+	if (desktopNotifications)
+	{
+		//Release access to desktop manager
+		//desktopNotifications->Release();
+		desktopNotifications = nullptr;
+	}
 }
 
-
-
-#pragma region Desktop type conversions
-UINT VirtualDesktop::desktopToIndex(GUID desktopID)
+#pragma region Virtual desktop creation and destruction
+//Instance new desktop
+HRESULT VirtualDesktop::createDesktop()
 {
-	IObjectArray *desktops = nullptr;
-	HRESULT hr = desktopManagerInternal->GetDesktops(&desktops);
+	IVirtualDesktop *newDesktop = nullptr;
+	return desktopManagerInternal->CreateDesktopW(&newDesktop);
+}
 
-	int i = 0;
-	IVirtualDesktop *desktop = nullptr;
-	desktops->GetAt(i, IID_PPV_ARGS(&desktop));
+//Destroy desktop
+HRESULT VirtualDesktop::destroyDesktop(UINT desktopIndex)
+{
+	IVirtualDesktop *desktop = indexToDesktop(desktopIndex);
+	return destroyDesktop(desktop);
+}
 
-	//Since desktops have no implicit order loop through IObjectArray until I find a match
-	while (desktop != nullptr)
+//Destroy desktop
+HRESULT VirtualDesktop::destroyDesktop(IVirtualDesktop *desktop)
+{
+	//Desktop to move to if current desktop is removed
+	IVirtualDesktop *fallbackDesktop;
+	HRESULT hr = desktopManagerInternal->GetAdjacentDesktop(desktop, AdjacentDesktop::LeftDirection, &fallbackDesktop);
+
+	//Get desktop to the right if no desktop was found to left
+	if (FAILED(hr))
 	{
-		GUID currID = GUID();
-		desktop->GetID(&currID);
-
-		if (currID == desktopID)
-		{
-			return i;
-		}
-
-		//Increment
-		i++;
-		desktops->GetAt(i, IID_PPV_ARGS(&desktop));
+		hr = desktopManagerInternal->GetAdjacentDesktop(desktop, AdjacentDesktop::RightDirection, &fallbackDesktop);
 	}
 
-	//Not found, just return default index
-	RmLog(LOG_ERROR, L"Unable to find index of specified desktop");
-	return 0;
-}
-IVirtualDesktop * VirtualDesktop::indexToDesktop(int desktopIndex)
-{
-	IObjectArray *desktops = nullptr;
-	desktopManagerInternal->GetDesktops(&desktops);
-
-	IVirtualDesktop *desktop = nullptr;
-	desktops->GetAt(desktopIndex, IID_PPV_ARGS(&desktop));
-
-	//Note this can be null in index was outside desktops
-	return desktop;
-}
-#pragma endregion
-
-#pragma region Window desktop getters
-HRESULT VirtualDesktop::getWindowDesktopId(HWND topLevelWindow, UINT *desktopIndex)
-{
-	GUID desktopID = GUID();
-	HRESULT hr = desktopManager->GetWindowDesktopId(topLevelWindow, &desktopID);
-
-	desktopIndex = new UINT(desktopToIndex(desktopID));
-
+	if (SUCCEEDED(hr))
+	{
+		return desktopManagerInternal->RemoveDesktop(desktop, fallbackDesktop);
+	}
+	//If no match found 
 	return hr;
-}
-
-//Just replicating for ease of use
-HRESULT VirtualDesktop::getWindowDesktopId(HWND topLevelWindow, GUID *desktopID)
-{
-	return desktopManager->GetWindowDesktopId(topLevelWindow, desktopID);
 }
 #pragma endregion
 
@@ -226,39 +164,93 @@ HRESULT VirtualDesktop::switchToDesktop(AdjacentDesktop direction)
 }
 #pragma endregion
 
-#pragma region Virtual desktop creation and destruction
-//Instance new desktop
-HRESULT VirtualDesktop::createDesktop()
+#pragma region Desktop type conversions
+UINT VirtualDesktop::desktopToIndex(IVirtualDesktop *desktop)
 {
-	IVirtualDesktop *newDesktop = nullptr;
-	return desktopManagerInternal->CreateDesktopW(&newDesktop);
+	GUID desktopID = GUID();
+	HRESULT hr = desktop->GetID(&desktopID);
+
+	return desktopToIndex(desktopID);
 }
-
-//Destroy desktop
-HRESULT VirtualDesktop::destroyDesktop(UINT desktopIndex)
+UINT VirtualDesktop::desktopToIndex(GUID desktopID)
 {
-	IVirtualDesktop *desktop = indexToDesktop(desktopIndex);
-	return destroyDesktop(desktop);
-}
+	IObjectArray *desktops = nullptr;
+	HRESULT hr = desktopManagerInternal->GetDesktops(&desktops);
 
-//Destroy desktop
-HRESULT VirtualDesktop::destroyDesktop(IVirtualDesktop *desktop)
-{
-	//Desktop to move to if current desktop is removed
-	IVirtualDesktop *fallbackDesktop;
-	HRESULT hr = desktopManagerInternal->GetAdjacentDesktop(desktop, AdjacentDesktop::LeftDirection, &fallbackDesktop);
+	UINT count;
+	desktops->GetCount(&count);
+	int i = 0;
+	IVirtualDesktop *currDesktop = nullptr;
+	desktops->GetAt(i, IID_PPV_ARGS(&currDesktop));
 
-	//Get desktop to the right if no desktop was found to left
-	if (FAILED(hr))
+	//Since desktops have no implicit order loop through IObjectArray until I find a match
+	while (currDesktop != nullptr)
 	{
-		hr = desktopManagerInternal->GetAdjacentDesktop(desktop, AdjacentDesktop::RightDirection, &fallbackDesktop);
+		GUID currID = GUID();
+		currDesktop->GetID(&currID);
+
+		if (currID == desktopID)
+		{
+			return i;
+		}
+
+		//Increment
+		i++;
+		desktops->GetAt(i, IID_PPV_ARGS(&currDesktop));
 	}
 
-	if (SUCCEEDED(hr))
-	{
-		return desktopManagerInternal->RemoveDesktop(desktop, fallbackDesktop);
-	}
-	//If no match found 
+	//Not found, just return default index
+	RmLog(LOG_ERROR, L"Unable to find index of specified desktop");
+	return 0;
+}
+IVirtualDesktop * VirtualDesktop::indexToDesktop(int desktopIndex)
+{
+	IObjectArray *desktops = nullptr;
+	desktopManagerInternal->GetDesktops(&desktops);
+
+	IVirtualDesktop *desktop = nullptr;
+	desktops->GetAt(desktopIndex, IID_PPV_ARGS(&desktop));
+
+	//Note this can be null in index was outside desktops
+	return desktop;
+}
+#pragma endregion
+
+#pragma region Window desktop getters
+HRESULT VirtualDesktop::getWindowDesktopId(HWND topLevelWindow, UINT *desktopIndex)
+{
+	GUID desktopID = GUID();
+	HRESULT hr = desktopManager->GetWindowDesktopId(topLevelWindow, &desktopID);
+
+	desktopIndex = new UINT(desktopToIndex(desktopID));
+
 	return hr;
+}
+
+//Just replicating for ease of use
+HRESULT VirtualDesktop::getWindowDesktopId(HWND topLevelWindow, GUID *desktopID)
+{
+	return desktopManager->GetWindowDesktopId(topLevelWindow, desktopID);
+}
+#pragma endregion
+
+#pragma region Functions for rainmeter measure types
+UINT VirtualDesktop::getCurrentDesktop()
+{
+	if (desktopNotifications)
+	{
+		//I would love to make this no require conversion on every call and instead only on desktop change but that will require another refactor
+		return desktopToIndex(desktopNotifications->getCurrDesktopID());
+	}
+	return 0;
+}
+
+UINT VirtualDesktop::getDesktopCount()
+{
+	if (desktopNotifications)
+	{
+		return desktopNotifications->getDesktopCount();
+	}
+	return 1;
 }
 #pragma endregion

@@ -2,32 +2,32 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="Plugin.cpp" />
+    <ClCompile Include="Taskbar\Taskbar.cpp" />
     <ClCompile Include="Utility.cpp" />
-<<<<<<< HEAD
     <ClCompile Include="VirtualDesktops\VirtualDesktop.cpp">
       <Filter>VirtualDesktop</Filter>
     </ClCompile>
-=======
-    <ClCompile Include="Taskbar\Taskbar.cpp" />
->>>>>>> 50e082a4b93fca3667ce2b61f6104bcc74c7c131
+    <ClCompile Include="VirtualDesktops\VirtualDesktopMeasure.cpp">
+      <Filter>VirtualDesktop</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Taskbar\Taskbar.h" />
+    <ClInclude Include="Utility.h" />
+    <ClInclude Include="version.h" />
+    <ClInclude Include="VirtualDesktops\VirtualDesktop.h">
+      <Filter>VirtualDesktop</Filter>
+    </ClInclude>
+    <ClInclude Include="VirtualDesktops\VirtualDesktopMeasure.h">
+      <Filter>VirtualDesktop</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Plugin.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="version.h" />
-    <ClInclude Include="Utility.h" />
-<<<<<<< HEAD
-    <ClInclude Include="VirtualDesktops\VirtualDesktop.h">
-      <Filter>VirtualDesktop</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
     <Filter Include="VirtualDesktop">
-      <UniqueIdentifier>{a3fe5101-abf0-457e-b2dd-d733ee24459b}</UniqueIdentifier>
+      <UniqueIdentifier>{1227b795-e2ab-437b-8166-b191922e045b}</UniqueIdentifier>
     </Filter>
-=======
-    <ClInclude Include="Taskbar\Taskbar.h" />
->>>>>>> 50e082a4b93fca3667ce2b61f6104bcc74c7c131
   </ItemGroup>
 </Project>
