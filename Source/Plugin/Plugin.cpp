@@ -9,7 +9,6 @@ struct Measure
 
 PLUGIN_EXPORT void Initialize(void** data, void* rm)
 {
-	Utility::GetUtility().SetRm(rm);
 	Measure* measure = new Measure;
 	*data = measure;
 }
