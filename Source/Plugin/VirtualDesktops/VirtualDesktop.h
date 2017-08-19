@@ -281,6 +281,7 @@ public:
 	HRESULT switchToDesktop(IVirtualDesktop *desktop);
 	HRESULT switchToDesktop(UINT desktopIndex);
 	HRESULT switchToDesktop(AdjacentDesktop direction);
+	HRESULT switchToDesktopAnim(AdjacentDesktop direction);
 
 	UINT desktopToIndex(GUID desktopID);
 	UINT desktopToIndex(IVirtualDesktop *desktop);

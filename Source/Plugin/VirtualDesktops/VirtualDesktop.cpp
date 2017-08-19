@@ -162,6 +162,71 @@ HRESULT VirtualDesktop::switchToDesktop(AdjacentDesktop direction)
 
 	return hr;
 }
+HRESULT VirtualDesktop::switchToDesktopAnim(AdjacentDesktop direction)
+{
+	//Key controls are:
+	//Left ctrl VK_LCONTROL 0xA2
+	//Left windows key VK_LWIN 0x5B
+	//Left arrow VK_LEFT 0x25
+	//Right arrow VK_RIGHT 0x27
+
+	const int inputCount = 3;
+	INPUT input[inputCount];
+	input[0].type = INPUT_KEYBOARD;
+	input[0].ki.wVk = 0xA2;
+	input[0].ki.wScan = 0;
+	input[0].ki.dwFlags = 0;
+	input[0].ki.time = 0;
+
+	input[1].type = INPUT_KEYBOARD;
+	input[1].ki.wVk = 0x5B;
+	input[1].ki.wScan = 0;
+	input[1].ki.dwFlags = 0;
+	input[1].ki.time = 0;
+
+	if (direction == AdjacentDesktop::LeftDirection)
+	{
+
+		input[2].type = INPUT_KEYBOARD;
+		input[2].ki.wVk = 0x25;
+		input[2].ki.wScan = 0;
+		input[2].ki.dwFlags = 0;
+		input[2].ki.time = 0;
+	}
+	else
+	{
+
+		input[2].type = INPUT_KEYBOARD;
+		input[2].ki.wVk = 0x27;
+		input[2].ki.wScan = 0;
+		input[2].ki.dwFlags = 0;
+		input[2].ki.time = 0;
+
+	}
+	
+	UINT keysSent = SendInput(inputCount, input, sizeof(INPUT));
+
+	if (keysSent > 0)
+	{
+		input[0].ki.dwFlags = KEYEVENTF_KEYUP;
+		input[1].ki.dwFlags = KEYEVENTF_KEYUP;
+		input[2].ki.dwFlags = KEYEVENTF_KEYUP;
+
+		keysSent = SendInput(inputCount, input, sizeof(INPUT));
+		if (keysSent > 0)
+		{
+			return S_OK;
+		}
+		else
+		{
+			return GetLastError();
+		}
+	}
+	else
+	{
+		return GetLastError();
+	}
+}
 #pragma endregion
 
 #pragma region Desktop type conversions

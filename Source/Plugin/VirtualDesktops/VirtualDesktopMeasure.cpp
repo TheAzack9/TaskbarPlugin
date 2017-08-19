@@ -72,9 +72,17 @@ void VirtualDesktopMeasure::ExecuteBang(LPCWSTR args)
 			RmLog(LOG_ERROR, L"Unable to convert dekstop number to an integer");
 		}
 	}
+	else if (cmd.find(L"nextdesktopanim") != std::string::npos)
+	{
+		virtualDesktop.switchToDesktopAnim(AdjacentDesktop::RightDirection);
+	}
 	else if (cmd.find(L"nextdesktop") != std::string::npos)
 	{
 		virtualDesktop.switchToDesktop(AdjacentDesktop::RightDirection);
+	}
+	else if (cmd.find(L"previousdesktopanim") != std::string::npos)
+	{
+		virtualDesktop.switchToDesktopAnim(AdjacentDesktop::LeftDirection);
 	}
 	else if (cmd.find(L"previousdesktop") != std::string::npos)
 	{
