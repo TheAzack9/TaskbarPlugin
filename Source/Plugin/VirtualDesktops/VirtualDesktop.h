@@ -150,18 +150,85 @@ public:
 
 };
 
+class virtualDesktopNotification;
+EXTERN_C const IID IID_IVirtualDesktopNotificationService;
+
+MIDL_INTERFACE("0CD45E71-D927-4F15-8B0A-8FEF525337BF")
+IVirtualDesktopNotificationService : public IUnknown
+{
+public:
+	virtual HRESULT STDMETHODCALLTYPE Register(
+		IVirtualDesktopNotification *pNotification,
+		DWORD *pdwCookie) = 0;
+
+	virtual HRESULT STDMETHODCALLTYPE Unregister(
+		DWORD dwCookie) = 0;
+};
+
+class VirtualDesktop
+{
+	friend class virtualDesktopNotification;
+public:
+	VirtualDesktop();
+	~VirtualDesktop();
+	void Init();
+
+	HRESULT createDesktop();
+	HRESULT destroyDesktop(IVirtualDesktop *desktop);
+	HRESULT destroyDesktop(UINT desktopIndex);
+
+	HRESULT switchToDesktop(IVirtualDesktop *desktop);
+	HRESULT switchToDesktop(UINT desktopIndex);
+	HRESULT switchToDesktop(AdjacentDesktop direction);
+	HRESULT switchToDesktopAnim(AdjacentDesktop direction);
+
+	UINT desktopToIndex(GUID desktopID);
+	UINT desktopToIndex(IVirtualDesktop *desktop);
+	IVirtualDesktop* indexToDesktop(int desktopIndex);
+
+	UINT getCurrentDesktop();
+	UINT getDesktopCount();
+
+	HRESULT getWindowDesktopId(HWND topLevelWindow, UINT *desktopIndex);
+	HRESULT getWindowDesktopId(HWND topLevelWindow, GUID *desktopID);
+
+private:
+
+	//Virtual Desktop managers and services
+	IServiceProvider* serviceProvider;
+	IVirtualDesktopManagerInternal* desktopManagerInternal;
+	IVirtualDesktopManager* desktopManager;
+
+	IVirtualDesktopNotificationService* desktopNotificationService;
+	virtualDesktopNotification* desktopNotifications;
+	DWORD notificationCookie;
+
+	bool isInit = false;
+};
 
 class virtualDesktopNotification : public IVirtualDesktopNotification
 {
 private:
 	ULONG _referenceCount;
 public:
-	//Inherited from IVirtualDesktopNotification, most of these are not implemented
-	virtualDesktopNotification(IVirtualDesktop *currDesktop, GUID currDesktopID, UINT desktopCount)
+	//Constructor, pass parent so we can access those classes
+	virtualDesktopNotification(VirtualDesktop *parentVirtualDesktop)
 	{
+		this->parentVirtualDesktop = parentVirtualDesktop;
+
+		IVirtualDesktop *currDesktop;
+		parentVirtualDesktop->desktopManagerInternal->GetCurrentDesktop(&currDesktop);
+
+		GUID currDesktopID = GUID();
+		currDesktop->GetID(&currDesktopID);
+
+		UINT desktopCount;
+		parentVirtualDesktop->desktopManagerInternal->GetCount(&desktopCount);
+
 		this->currDesktop = currDesktop;
 		this->currDesktopID = currDesktopID;
 		this->desktopCount = desktopCount;
+		this->desktopIndex = parentVirtualDesktop->desktopToIndex(this->currDesktopID);
 	}
 #pragma region Methods replicating originals
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void ** ppvObject) override
@@ -202,12 +269,12 @@ public:
 		return E_NOTIMPL;
 	}
 
-	virtual HRESULT STDMETHODCALLTYPE VirtualDesktopDestroyFailed(IVirtualDesktop *pDesktopDestroyed, IVirtualDesktop * pDesktopFallback) 
+	virtual HRESULT STDMETHODCALLTYPE VirtualDesktopDestroyFailed(IVirtualDesktop *pDesktopDestroyed, IVirtualDesktop * pDesktopFallback)
 	{
 		return E_NOTIMPL;
 	}
 #pragma endregion
-	
+
 	//I may implement this once I figure out what it does
 	virtual HRESULT STDMETHODCALLTYPE ViewVirtualDesktopChanged(IApplicationView * pView) override
 	{
@@ -231,6 +298,9 @@ public:
 		//Get GUID here because getting it in the conversion later it fails when > virtual desktop when rainmeter boots and then it is only done once per change
 		currDesktop->GetID(&currDesktopID);
 
+		//Get current desktop index from ID
+		desktopIndex = parentVirtualDesktop->desktopToIndex(currDesktopID);
+
 		return S_OK;
 	}
 
@@ -246,61 +316,14 @@ public:
 	{
 		return desktopCount;
 	}
+	UINT getDesktopIndex()
+	{
+		return desktopIndex;
+	}
 private:
 	IVirtualDesktop *currDesktop;
 	GUID currDesktopID = GUID();
-	UINT desktopCount = 0;
-
-};
-
-EXTERN_C const IID IID_IVirtualDesktopNotificationService;
-
-MIDL_INTERFACE("0CD45E71-D927-4F15-8B0A-8FEF525337BF")
-IVirtualDesktopNotificationService : public IUnknown
-{
-public:
-	virtual HRESULT STDMETHODCALLTYPE Register(
-		IVirtualDesktopNotification *pNotification,
-		DWORD *pdwCookie) = 0;
-
-	virtual HRESULT STDMETHODCALLTYPE Unregister(
-		DWORD dwCookie) = 0;
-};
-
-class VirtualDesktop
-{
-	friend class virtualDesktopNotification;
-public:
-	VirtualDesktop();
-	~VirtualDesktop();
-
-	HRESULT createDesktop();
-	HRESULT destroyDesktop(IVirtualDesktop *desktop);
-	HRESULT destroyDesktop(UINT desktopIndex);
-
-	HRESULT switchToDesktop(IVirtualDesktop *desktop);
-	HRESULT switchToDesktop(UINT desktopIndex);
-	HRESULT switchToDesktop(AdjacentDesktop direction);
-	HRESULT switchToDesktopAnim(AdjacentDesktop direction);
-
-	UINT desktopToIndex(GUID desktopID);
-	UINT desktopToIndex(IVirtualDesktop *desktop);
-	IVirtualDesktop* indexToDesktop(int desktopIndex);
-
-	UINT getCurrentDesktop();
-	UINT getDesktopCount();
-
-	HRESULT getWindowDesktopId(HWND topLevelWindow, UINT *desktopIndex);
-	HRESULT getWindowDesktopId(HWND topLevelWindow, GUID *desktopID);
-
-private:
-
-	//Virtual Desktop managers and services
-	IServiceProvider* serviceProvider;
-	IVirtualDesktopManagerInternal* desktopManagerInternal;
-	IVirtualDesktopManager* desktopManager;
-
-	IVirtualDesktopNotificationService* desktopNotificationService;
-	virtualDesktopNotification* desktopNotifications;
-	DWORD notificationCookie;
+	UINT desktopCount = 1;
+	UINT desktopIndex = 0;
+	VirtualDesktop *parentVirtualDesktop;
 };

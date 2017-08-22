@@ -10,10 +10,6 @@ VirtualDesktop VirtualDesktopMeasure::virtualDesktop = VirtualDesktop();
 
 void VirtualDesktopMeasure::Initialize(void * rm)
 {
-	if (measureCount == 0)
-	{
-		virtualDesktop = VirtualDesktop();
-	}
 	++measureCount;
 }
 

@@ -7,8 +7,15 @@
 
 VirtualDesktop::VirtualDesktop()
 {
+	
+}
+
+//This can not be called during the constructor creating an instance of CLSID_ImmersiveShell in static constructor causes deadlock
+void VirtualDesktop::Init()
+{
+	isInit = true;
 	//Setup desktop manager
-	HRESULT hr = ::CoCreateInstance(CLSID_ImmersiveShell, NULL, CLSCTX_LOCAL_SERVER, __uuidof(IServiceProvider), (PVOID*)&serviceProvider);
+	HRESULT hr = CoCreateInstance(CLSID_ImmersiveShell, NULL, CLSCTX_LOCAL_SERVER, __uuidof(IServiceProvider), (PVOID*)&serviceProvider);
 	if (SUCCEEDED(hr))
 	{
 		//Init internal virtual desktop API
@@ -33,17 +40,7 @@ VirtualDesktop::VirtualDesktop()
 		}
 		else
 		{
-			//Initialize internal variables 
-			IVirtualDesktop *currDesktop;
-			desktopManagerInternal->GetCurrentDesktop(&currDesktop);
-
-			GUID currDesktopID = GUID();
-			currDesktop->GetID(&currDesktopID);
-
-			UINT desktopCount;
-			desktopManagerInternal->GetCount(&desktopCount);
-
-			desktopNotifications = new virtualDesktopNotification(currDesktop, currDesktopID, desktopCount);
+			desktopNotifications = new virtualDesktopNotification(this);
 
 			//Register for notifications
 			hr = desktopNotificationService->Register(desktopNotifications, &notificationCookie);
@@ -61,30 +58,28 @@ VirtualDesktop::VirtualDesktop()
 
 VirtualDesktop::~VirtualDesktop()
 {
+	isInit = false;
+
 	if (desktopManagerInternal)
 	{
 		//Release access to desktop manager
 		desktopManagerInternal->Release();
-		desktopManagerInternal = nullptr;
 	}
 	if (desktopManager)
 	{
 		//Release access to desktop manager
 		desktopManager->Release();
-		desktopManager = nullptr;
 	}
 	if (desktopNotificationService)
 	{
 		//Release access to desktop manager
 		desktopNotificationService->Unregister(notificationCookie);
 		desktopNotificationService->Release();
-		desktopNotificationService = nullptr;
 	}
 	if (desktopNotifications)
 	{
 		//Release access to desktop manager
 		//desktopNotifications->Release();
-		desktopNotifications = nullptr;
 	}
 }
 
@@ -92,6 +87,10 @@ VirtualDesktop::~VirtualDesktop()
 //Instance new desktop
 HRESULT VirtualDesktop::createDesktop()
 {
+	if (!isInit)
+	{
+		Init();
+	}
 	IVirtualDesktop *newDesktop = nullptr;
 	return desktopManagerInternal->CreateDesktopW(&newDesktop);
 }
@@ -99,6 +98,10 @@ HRESULT VirtualDesktop::createDesktop()
 //Destroy desktop
 HRESULT VirtualDesktop::destroyDesktop(UINT desktopIndex)
 {
+	if (!isInit)
+	{
+		Init();
+	}
 	IVirtualDesktop *desktop = indexToDesktop(desktopIndex);
 	return destroyDesktop(desktop);
 }
@@ -106,6 +109,10 @@ HRESULT VirtualDesktop::destroyDesktop(UINT desktopIndex)
 //Destroy desktop
 HRESULT VirtualDesktop::destroyDesktop(IVirtualDesktop *desktop)
 {
+	if (!isInit)
+	{
+		Init();
+	}
 	//Desktop to move to if current desktop is removed
 	IVirtualDesktop *fallbackDesktop;
 	HRESULT hr = desktopManagerInternal->GetAdjacentDesktop(desktop, AdjacentDesktop::LeftDirection, &fallbackDesktop);
@@ -129,6 +136,10 @@ HRESULT VirtualDesktop::destroyDesktop(IVirtualDesktop *desktop)
 //Switch to specific desktop
 HRESULT VirtualDesktop::switchToDesktop(IVirtualDesktop *desktop)
 {
+	if (!isInit)
+	{
+		Init();
+	}
 	if (desktop != nullptr)
 	{
 		return desktopManagerInternal->SwitchDesktop(desktop);
@@ -138,12 +149,20 @@ HRESULT VirtualDesktop::switchToDesktop(IVirtualDesktop *desktop)
 //Switch to specific desktop by index
 HRESULT VirtualDesktop::switchToDesktop(UINT desktopIndex)
 {
+	if (!isInit)
+	{
+		Init();
+	}
 	IVirtualDesktop *desktop = indexToDesktop(desktopIndex);
 	return switchToDesktop(desktop);
 }
 //Switch to desktop in certain direction
 HRESULT VirtualDesktop::switchToDesktop(AdjacentDesktop direction)
 {
+	if (!isInit)
+	{
+		Init();
+	}
 	//Desktop to move to if current desktop is removed
 	IVirtualDesktop *currDesktop = nullptr;
 	HRESULT hr = desktopManagerInternal->GetCurrentDesktop(&currDesktop);
@@ -164,6 +183,10 @@ HRESULT VirtualDesktop::switchToDesktop(AdjacentDesktop direction)
 }
 HRESULT VirtualDesktop::switchToDesktopAnim(AdjacentDesktop direction)
 {
+	if (!isInit)
+	{
+		Init();
+	}
 	//Key controls are:
 	//Left ctrl VK_LCONTROL 0xA2
 	//Left windows key VK_LWIN 0x5B
@@ -232,6 +255,10 @@ HRESULT VirtualDesktop::switchToDesktopAnim(AdjacentDesktop direction)
 #pragma region Desktop type conversions
 UINT VirtualDesktop::desktopToIndex(IVirtualDesktop *desktop)
 {
+	if (!isInit)
+	{
+		Init();
+	}
 	GUID desktopID = GUID();
 	HRESULT hr = desktop->GetID(&desktopID);
 
@@ -239,6 +266,10 @@ UINT VirtualDesktop::desktopToIndex(IVirtualDesktop *desktop)
 }
 UINT VirtualDesktop::desktopToIndex(GUID desktopID)
 {
+	if (!isInit)
+	{
+		Init();
+	}
 	IObjectArray *desktops = nullptr;
 	HRESULT hr = desktopManagerInternal->GetDesktops(&desktops);
 
@@ -270,6 +301,10 @@ UINT VirtualDesktop::desktopToIndex(GUID desktopID)
 }
 IVirtualDesktop * VirtualDesktop::indexToDesktop(int desktopIndex)
 {
+	if (!isInit)
+	{
+		Init();
+	}
 	IObjectArray *desktops = nullptr;
 	desktopManagerInternal->GetDesktops(&desktops);
 
@@ -284,6 +319,10 @@ IVirtualDesktop * VirtualDesktop::indexToDesktop(int desktopIndex)
 #pragma region Window desktop getters
 HRESULT VirtualDesktop::getWindowDesktopId(HWND topLevelWindow, UINT *desktopIndex)
 {
+	if (!isInit)
+	{
+		Init();
+	}
 	GUID desktopID = GUID();
 	HRESULT hr = desktopManager->GetWindowDesktopId(topLevelWindow, &desktopID);
 
@@ -295,6 +334,10 @@ HRESULT VirtualDesktop::getWindowDesktopId(HWND topLevelWindow, UINT *desktopInd
 //Just replicating for ease of use
 HRESULT VirtualDesktop::getWindowDesktopId(HWND topLevelWindow, GUID *desktopID)
 {
+	if (!isInit)
+	{
+		Init();
+	}
 	return desktopManager->GetWindowDesktopId(topLevelWindow, desktopID);
 }
 #pragma endregion
@@ -302,16 +345,24 @@ HRESULT VirtualDesktop::getWindowDesktopId(HWND topLevelWindow, GUID *desktopID)
 #pragma region Functions for rainmeter measure types
 UINT VirtualDesktop::getCurrentDesktop()
 {
+	if (!isInit)
+	{
+		Init();
+	}
 	if (desktopNotifications)
 	{
 		//I would love to make this no require conversion on every call and instead only on desktop change but that will require another refactor
-		return desktopToIndex(desktopNotifications->getCurrDesktopID());
+		return desktopNotifications->getDesktopIndex();
 	}
 	return 0;
 }
 
 UINT VirtualDesktop::getDesktopCount()
 {
+	if (!isInit)
+	{
+		Init();
+	}
 	if (desktopNotifications)
 	{
 		return desktopNotifications->getDesktopCount();
