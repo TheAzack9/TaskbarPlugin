@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <string>
 #include "../Utility.h"
+#include "../VirtualDesktops/VirtualDesktopMeasure.h"
 
 struct TaskbarItem
 {
@@ -31,7 +32,8 @@ struct TaskbarItem
 
 	UINT GetVirtualDesktopId()
 	{
-		
+		VirtualDesktopMeasure::virtualDesktop.getWindowDesktopId(m_Hwnd, &m_VirtualDesktopId);
+		return m_VirtualDesktopId;
 	}
 };
 

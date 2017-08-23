@@ -60,7 +60,7 @@ std::wstring TaskbarChildMeasure::GetValue()
 	case Type::Icon: return item->GetIconPath();
 	case Type::ProcessId: return std::to_wstring(item->m_ProcessId);
 	case Type::Path: return item->m_ProgramPath;
-	case Type::VirtualDesktopId: std::to_wstring(item->m_VirtualDesktopId);
+	case Type::VirtualDesktopId: return std::to_wstring(item->GetVirtualDesktopId());
 	case Type::IsPinned: return item->m_IsPinned ? L"1" : L"0";
 	default: RmLog(m_Rm, LOG_ERROR, L"Unknown type"); return L""; // Unknown type...
 	}

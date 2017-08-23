@@ -191,11 +191,19 @@ BOOL CALLBACK EnumWindows(HWND hwnd, LPARAM lparam)
 
 	LONG styles = GetWindowLong(hwnd, GWL_STYLE);
 
-	if (Utility::IsEqual(windowClass.c_str(), L"ApplicationFrameWindow", false) && !(styles & WS_MINIMIZE))
+
+	if (!Utility::IsEqual(windowClass.c_str(), L"ApplicationFrameWindow", false) || styles & WS_MINIMIZE)
 	{
-		bool isValidWindow = false;
-		EnumChildWindows(hwnd, EnumChildren, (LPARAM)&isValidWindow);
-		if (!isValidWindow) return true;
+		// TODO: DO THIS SHIT TREVOR, NOW >:D
+		// auto& vd = VirtualDesktopMeasure::virtualDesktop;
+		// UINT id;
+		// HRESULT hr = vd.getWindowDesktopId(hwnd, &id);
+		// if(SUCCEEDED(hr) && id == vd.getCurrentDesktop())
+		{
+			bool isValidWindow = false;
+			EnumChildWindows(hwnd, EnumChildren, (LPARAM)&isValidWindow);
+			if (!isValidWindow) return true;
+		}
 	}
 
 	std::vector<HWND>& handles = *(std::vector<HWND>*)lparam;
