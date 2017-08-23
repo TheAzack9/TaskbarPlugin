@@ -326,7 +326,7 @@ HRESULT VirtualDesktop::getWindowDesktopId(HWND topLevelWindow, UINT *desktopInd
 	GUID desktopID = GUID();
 	HRESULT hr = desktopManager->GetWindowDesktopId(topLevelWindow, &desktopID);
 
-	desktopIndex = new UINT(desktopToIndex(desktopID));
+	(*desktopIndex) = desktopToIndex(desktopID);
 
 	return hr;
 }

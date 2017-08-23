@@ -3,7 +3,6 @@
 #include <unordered_map>
 #include <Gdiplus.h>
 #include <Shlwapi.h>
-#include <Commctrl.h>
 #include <commoncontrols.h>
 #include <Windows.h>
 

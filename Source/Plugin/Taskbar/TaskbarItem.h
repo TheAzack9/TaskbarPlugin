@@ -14,7 +14,7 @@ struct TaskbarItem
 	std::wstring m_IconPath = L"";
 	HWND m_Hwnd = {0};
 	LONG m_ProcessId = 0;
-	int m_VirtualDesktopId = 0;
+	UINT m_VirtualDesktopId = 0;
 	bool m_IsUWP = false;
 	bool m_IsPinned = false;
 	bool m_IsVisible = false;
@@ -27,6 +27,11 @@ struct TaskbarItem
 			m_IconPath = Utility::GetIconPath(m_ProgramDescription, m_Hwnd, m_IsUWP, IconSize::Normal);
 		}
 		return m_IconPath;
+	}
+
+	UINT GetVirtualDesktopId()
+	{
+		
 	}
 };
 
