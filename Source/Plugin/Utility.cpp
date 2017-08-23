@@ -38,7 +38,7 @@ std::wstring Utility::GetIconPath(const std::wstring& programName, HWND hwnd, bo
 	}
 	else
 	{
-		HICON icon = 0;/* = reinterpret_cast<HICON>(::SendMessageW(hwnd, WM_GETICON, ICON_BIG, 0));
+		HICON icon = reinterpret_cast<HICON>(::SendMessageW(hwnd, WM_GETICON, ICON_BIG, 0));
 		if (icon == 0)
 		{
 			icon = reinterpret_cast<HICON>(::GetClassLongPtrW(hwnd, GCLP_HICON));
