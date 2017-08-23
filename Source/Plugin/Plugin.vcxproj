@@ -19,7 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BaseMeasure.cpp" />
     <ClCompile Include="Plugin.cpp" />
+    <ClCompile Include="Taskbar\TaskbarParentMeasure.cpp" />
+    <ClCompile Include="Taskbar\TaskbarChildMeasure.cpp" />
+    <ClCompile Include="Taskbar\TaskbarItem.cpp" />
+    <ClCompile Include="Taskbar\TaskbarThread.cpp" />
     <ClCompile Include="Taskbar\Taskbar.cpp" />
     <ClCompile Include="Utility.cpp" />
     <ClCompile Include="VirtualDesktops\VirtualDesktop.cpp" />
@@ -29,6 +34,11 @@
     <ResourceCompile Include="Plugin.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BaseMeasure.h" />
+    <ClInclude Include="Taskbar\TaskbarParentMeasure.h" />
+    <ClInclude Include="Taskbar\TaskbarChildMeasure.h" />
+    <ClInclude Include="Taskbar\TaskbarItem.h" />
+    <ClInclude Include="Taskbar\TaskbarThread.h" />
     <ClInclude Include="Taskbar\Taskbar.h" />
     <ClInclude Include="Utility.h" />
     <ClInclude Include="version.h" />
@@ -128,7 +138,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>..\API\x32\Rainmeter.lib;Mincore.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\API\x32\Rainmeter.lib;Mincore.lib;Version.lib;%(AdditionalDependencies);gdiplus.lib;Shlwapi.lib</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <ProfileGuidedDatabase>$(OutDir)$(TargetName).pgd</ProfileGuidedDatabase>
     </Link>
@@ -158,7 +168,7 @@ echo f | xcopy /R /Y "$(OutputPath)$(TargetFileName)" "%appdata%\Rainmeter\Plugi
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>..\API\x64\Rainmeter.lib;Mincore.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\API\x64\Rainmeter.lib;Mincore.lib;Version.lib;%(AdditionalDependencies);gdiplus.lib;Shlwapi.lib</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <ProfileGuidedDatabase>$(OutDir)$(TargetName).pgd</ProfileGuidedDatabase>
     </Link>
@@ -196,7 +206,7 @@ echo f | xcopy /R /Y "$(OutputPath)$(TargetFileName)" "%appdata%\Rainmeter\Plugi
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <MergeSections>.rdata=.text</MergeSections>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>..\API\x32\Rainmeter.lib;Mincore.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\API\x32\Rainmeter.lib;Mincore.lib;Version.lib;%(AdditionalDependencies);gdiplus.lib;Shlwapi.lib</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <ProfileGuidedDatabase>$(OutDir)$(TargetName).pgd</ProfileGuidedDatabase>
     </Link>
@@ -228,7 +238,7 @@ echo f | xcopy /R /Y "$(OutputPath)$(TargetFileName)" "%appdata%\Rainmeter\Plugi
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <MergeSections>.rdata=.text</MergeSections>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>..\API\x64\Rainmeter.lib;Mincore.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\API\x64\Rainmeter.lib;Mincore.lib;Version.lib;%(AdditionalDependencies);gdiplus.lib;Shlwapi.lib</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <ProfileGuidedDatabase>$(OutDir)$(TargetName).pgd</ProfileGuidedDatabase>
     </Link>
