@@ -138,7 +138,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>..\API\x32\Rainmeter.lib;Mincore.lib;Version.lib;%(AdditionalDependencies);gdiplus.lib;Shlwapi.lib</AdditionalDependencies>
+      <AdditionalDependencies>..\API\x32\Rainmeter.lib;Mincore.lib;Version.lib;%(AdditionalDependencies);gdiplus.lib;Shlwapi.lib;Dwmapi.lib</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <ProfileGuidedDatabase>$(OutDir)$(TargetName).pgd</ProfileGuidedDatabase>
     </Link>
@@ -168,7 +168,7 @@ echo f | xcopy /R /Y "$(OutputPath)$(TargetFileName)" "%appdata%\Rainmeter\Plugi
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>..\API\x64\Rainmeter.lib;Mincore.lib;Version.lib;%(AdditionalDependencies);gdiplus.lib;Shlwapi.lib</AdditionalDependencies>
+      <AdditionalDependencies>..\API\x64\Rainmeter.lib;Mincore.lib;Version.lib;%(AdditionalDependencies);gdiplus.lib;Shlwapi.lib;Dwmapi.lib</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <ProfileGuidedDatabase>$(OutDir)$(TargetName).pgd</ProfileGuidedDatabase>
     </Link>
@@ -206,7 +206,7 @@ echo f | xcopy /R /Y "$(OutputPath)$(TargetFileName)" "%appdata%\Rainmeter\Plugi
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <MergeSections>.rdata=.text</MergeSections>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>..\API\x32\Rainmeter.lib;Mincore.lib;Version.lib;%(AdditionalDependencies);gdiplus.lib;Shlwapi.lib</AdditionalDependencies>
+      <AdditionalDependencies>..\API\x32\Rainmeter.lib;Mincore.lib;Version.lib;%(AdditionalDependencies);gdiplus.lib;Shlwapi.lib;Dwmapi.lib</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <ProfileGuidedDatabase>$(OutDir)$(TargetName).pgd</ProfileGuidedDatabase>
     </Link>
@@ -238,7 +238,7 @@ echo f | xcopy /R /Y "$(OutputPath)$(TargetFileName)" "%appdata%\Rainmeter\Plugi
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <MergeSections>.rdata=.text</MergeSections>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>..\API\x64\Rainmeter.lib;Mincore.lib;Version.lib;%(AdditionalDependencies);gdiplus.lib;Shlwapi.lib</AdditionalDependencies>
+      <AdditionalDependencies>..\API\x64\Rainmeter.lib;Mincore.lib;Version.lib;%(AdditionalDependencies);gdiplus.lib;Shlwapi.lib;Dwmapi.lib</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <ProfileGuidedDatabase>$(OutDir)$(TargetName).pgd</ProfileGuidedDatabase>
     </Link>

@@ -25,7 +25,7 @@ struct TaskbarItem
 		//TODO: This is still recreated every time the vector is copied, try to optimize :)
 		if(m_IconPath.empty())
 		{
-			m_IconPath = Utility::GetIconPath(m_ProgramDescription, m_Hwnd, m_IsUWP, IconSize::Normal);
+			m_IconPath = Utility::GetIconPath(m_ProgramDescription, m_ProgramPath, m_Hwnd, m_IsUWP, IconSize::Normal);
 		}
 		return m_IconPath;
 	}

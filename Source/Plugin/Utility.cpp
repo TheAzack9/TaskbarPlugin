@@ -27,7 +27,7 @@ namespace {
 
 }  // namespace
 
-std::wstring Utility::GetIconPath(const std::wstring& programName, HWND hwnd, bool isUWP, IconSize size)
+std::wstring Utility::GetIconPath(const std::wstring& programName, const std::wstring& exeLocation, HWND hwnd, bool isUWP, IconSize size)
 {
 	std::wstring val;
 	auto& map = GetResourceMap();
@@ -47,6 +47,11 @@ std::wstring Utility::GetIconPath(const std::wstring& programName, HWND hwnd, bo
 		if(icon == 0)
 		{
 			icon = reinterpret_cast<HICON>(::GetClassLongPtrW(hwnd, GCLP_HICONSM));
+		}
+
+		if(icon == 0)
+		{
+			ExtractIconEx(exeLocation.c_str(), 0, &icon, nullptr, 1);
 		}
 		/*
 		if (icon == 0) {

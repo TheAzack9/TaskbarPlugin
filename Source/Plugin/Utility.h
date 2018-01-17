@@ -45,7 +45,7 @@ public:
 	Utility(Utility const&) = delete;
 	void operator=(Utility const&) = delete;
 	
-	static std::wstring GetIconPath(const std::wstring& programName, HWND hwnd, bool isUWP, IconSize size);
+	static std::wstring GetIconPath(const std::wstring& programName, const std::wstring& exeLocation, HWND hwnd, bool isUWP, IconSize size);
 
 	static IconResourceMap& GetResourceMap();
 

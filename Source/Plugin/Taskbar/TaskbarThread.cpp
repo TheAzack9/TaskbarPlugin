@@ -8,7 +8,9 @@
 #include <AppModel.h>
 #include <winuser.h>
 #include "TaskbarItem.h"
-
+#include <Dwmapi.h>
+#include <Propsys.h>
+#include <Propkey.h>
 
 std::wstring GetWindowClass(HWND hwnd)
 {
@@ -157,6 +159,12 @@ bool IsValidWindow(HWND hwnd)
 	// This fixes issue where either manage or about in rainmeter is visible, but not both... it seems that some extra hwnds are visible
 	// if (GetLastPopupHwnd(root) != hwnd) return false; 
 	if (!IsWindowVisible(hwnd)) return false;
+
+
+	int cloaked = 0;
+	DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, static_cast<LPVOID>(&cloaked), sizeof cloaked);
+	if (cloaked != 0) return false;
+
 	return true;
 }
 
@@ -172,6 +180,7 @@ BOOL CALLBACK EnumWindows(HWND hwnd, LPARAM lparam)
 	{
 		return true;
 	}
+	
 
 	/*
 	* Best way i found to distinguish apps from exe's is that the uwp add is only valid if it is an ApplicationFrameWindow with a child window that is Windows.UI.Core.CoreWindow
@@ -192,7 +201,7 @@ BOOL CALLBACK EnumWindows(HWND hwnd, LPARAM lparam)
 	LONG styles = GetWindowLong(hwnd, GWL_STYLE);
 
 
-	if (!Utility::IsEqual(windowClass.c_str(), L"ApplicationFrameWindow", false) || styles & WS_MINIMIZE)
+	/*if (!Utility::IsEqual(windowClass.c_str(), L"ApplicationFrameWindow", false) || styles & WS_MINIMIZE)
 	{
 		// TODO: DO THIS SHIT TREVOR, NOW >:D
 		// auto& vd = VirtualDesktopMeasure::virtualDesktop;
@@ -204,7 +213,7 @@ BOOL CALLBACK EnumWindows(HWND hwnd, LPARAM lparam)
 			EnumChildWindows(hwnd, EnumChildren, (LPARAM)&isValidWindow);
 			if (!isValidWindow) return true;
 		}
-	}
+	}*/
 
 	std::vector<HWND>& handles = *(std::vector<HWND>*)lparam;
 	handles.push_back(hwnd);
@@ -240,6 +249,7 @@ void TaskbarThread::Update(TaskbarThread* taskbar, bool runOnce)
 				std::wstring windowClass = GetWindowClass(hwnd);
 				auto processId = GetProcessId(hwnd);
 				HANDLE processHandle = GetProcessHandle(processId);
+				HANDLE testHandle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, processId);
 
 				std::wstring processPath;
 				std::wstring processName;
@@ -247,6 +257,16 @@ void TaskbarThread::Update(TaskbarThread* taskbar, bool runOnce)
 
 				std::wstring uwpLocation;
 				bool isUwp = false;
+
+				IPropertyStore *pps;
+				HRESULT hr = SHGetPropertyStoreForWindow(hwnd, IID_PPV_ARGS(&pps));
+				if(SUCCEEDED(hr))
+				{
+					PROPVARIANT var;
+					
+					hr = pps->GetValue(PKEY_AppUserModel_ID, &var);
+					pps->Release();
+				}
 
 				if (!Utility::IsEqual(windowClass.c_str(), L"ApplicationFrameWindow", false))
 				{
@@ -270,6 +290,25 @@ void TaskbarThread::Update(TaskbarThread* taskbar, bool runOnce)
 							exeDescription = L"Properties";
 						}
 					}
+
+					std::wstring test;
+					test.resize(200);
+					UINT32 l =0;
+					LONG result = GetApplicationUserModelId(testHandle, &l, NULL);
+
+					if(result != ERROR_INSUFFICIENT_BUFFER)
+					{
+						if(result == APPMODEL_ERROR_NO_APPLICATION)
+						{
+							int i = 123;
+						}
+						else
+						{
+							int i = 123;
+
+						}
+					}
+
 				}
 				else // Is UWP app
 				{
