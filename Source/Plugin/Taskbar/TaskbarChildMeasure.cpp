@@ -23,6 +23,7 @@ bool TaskbarChildMeasure::Reload()
 		else if (Utility::IsEqual(str.c_str(), L"Path")) return Type::Path;
 		else if (Utility::IsEqual(str.c_str(), L"VirtualDesktopId")) return Type::VirtualDesktopId;
 		else if (Utility::IsEqual(str.c_str(), L"IsPinned")) return Type::IsPinned;
+		else if (Utility::IsEqual(str.c_str(), L"GroupCount")) return Type::GroupCount; // TODO: error if parent != grouped
 		return Type::Unknown;
 	};
 
@@ -62,6 +63,7 @@ std::wstring TaskbarChildMeasure::GetValue()
 	case Type::Path: return item->m_ProgramPath;
 	case Type::VirtualDesktopId: return std::to_wstring(item->GetVirtualDesktopId());
 	case Type::IsPinned: return item->m_IsPinned ? L"1" : L"0";
+	case Type::GroupCount: return std::to_wstring(item->m_GroupCount);
 	default: RmLog(m_Rm, LOG_ERROR, L"Unknown type"); return L""; // Unknown type...
 	}
 }
@@ -73,10 +75,5 @@ TaskbarItem* TaskbarChildMeasure::GetItem()
 	auto parent = TaskbarParentMeasure::GetParent( m_Parent, RmGetSkin(m_Rm) );
 	if (!parent) return nullptr;
 
-	auto& taskbar = parent->GetTaskbar();
-	const auto items = taskbar.GetTaskbarItems();
-	if (!items) return nullptr;
-
-	if (m_Index >= items->size()) return nullptr;
-	return &(*items)[m_Index];
+	return parent->GetItem(m_Index);
 }

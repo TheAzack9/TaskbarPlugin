@@ -23,6 +23,7 @@ public:
 		Path,
 		VirtualDesktopId,
 		IsPinned,
+		GroupCount,
 		Unknown
 	};
 

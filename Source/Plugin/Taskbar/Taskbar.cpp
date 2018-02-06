@@ -11,9 +11,9 @@ Taskbar::~Taskbar()
 	GetTaskbarInstance().RemoveReference();
 }
 
-std::vector<TaskbarItem>* Taskbar::GetTaskbarItems()
+std::vector<TaskbarItem>* Taskbar::GetTaskbarItems(bool grouped)
 {
-	return &GetTaskbarInstance().m_Thread->GetPrograms();
+	return &GetTaskbarInstance().m_Thread->GetPrograms(grouped);
 }
 
 TakbarInstance& Taskbar::GetTaskbarInstance()

@@ -38,32 +38,32 @@ std::wstring Utility::GetIconPath(const std::wstring& programName, const std::ws
 	}
 	else
 	{
-		HICON icon = reinterpret_cast<HICON>(::SendMessageW(hwnd, WM_GETICON, ICON_BIG, 0));
-		if (icon == 0)
-		{
+		HICON icon = nullptr;
+
+
+		if (icon == 0) {
+			// Alternative method. Get from the window class
 			icon = reinterpret_cast<HICON>(::GetClassLongPtrW(hwnd, GCLP_HICON));
 		}
-
-		if(icon == 0)
-		{
-			icon = reinterpret_cast<HICON>(::GetClassLongPtrW(hwnd, GCLP_HICONSM));
-		}
-
-		if(icon == 0)
+		if (icon == 0)
 		{
 			ExtractIconEx(exeLocation.c_str(), 0, &icon, nullptr, 1);
 		}
-		/*
-		if (icon == 0) {
-			// Alternative method. Get from the window class
+		if(icon == 0)
+		{
+			icon = reinterpret_cast<HICON>(::SendMessageW(hwnd, WM_GETICON, ICON_BIG, 0));
+		}
+
+		/*if(icon == 0)
+		{
 			icon = reinterpret_cast<HICON>(::GetClassLongPtrW(hwnd, GCLP_HICONSM));
 		}
 
 		// Alternative method: get the first icon from the main module (executable image of the process)
 		if (icon == 0) {
 			icon = ::LoadIcon(GetModuleHandleW(0), MAKEINTRESOURCE(0));
-		}
-		*/
+		}*/
+		
 		// Alternative method. Use OS default icon
 		if (icon == 0) {
 			icon = ::LoadIcon(0, IDI_APPLICATION);

@@ -14,7 +14,7 @@ public:
 	TaskbarThread();
 	~TaskbarThread();
 
-	std::vector<TaskbarItem>& GetPrograms();
+	std::vector<TaskbarItem>& GetPrograms(bool grouped = false);
 
 	static void Update(TaskbarThread* taskbar, bool runOnce = false);
 private:
@@ -23,6 +23,7 @@ private:
 	std::map<HWND, TaskbarItem> m_ProgramMap;
 	std::vector<TaskbarItem> m_Programs;
 	std::vector<TaskbarItem> m_ProgramsCache;
+	std::vector<TaskbarItem> m_ProgramsGroupedCache;
 
 	std::atomic<bool> m_Interrupted = false;
 	std::atomic<bool> m_IsRunning = false;

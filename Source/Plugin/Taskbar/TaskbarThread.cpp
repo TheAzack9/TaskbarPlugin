@@ -172,14 +172,6 @@ BOOL CALLBACK EnumWindows(HWND hwnd, LPARAM lparam)
 {
 	if (!IsValidWindow(hwnd)) return true;
 
-	std::wstring windowTitle = GetWindowTitle(hwnd);
-	if (windowTitle.size() == 0) return true;
-
-	std::wstring windowClass = GetWindowClass(hwnd);
-	if (Utility::IsEqual(windowClass.c_str(), L"Windows.UI.Core.CoreWindow", false))
-	{
-		return true;
-	}
 	
 
 	/*
@@ -454,13 +446,35 @@ TaskbarThread::~TaskbarThread()
 
 }
 
-std::vector<TaskbarItem>& TaskbarThread::GetPrograms()
+std::vector<TaskbarItem>& TaskbarThread::GetPrograms(bool grouped)
 {
 	if(m_HasChanged)
 	{
-		std::lock_guard<std::mutex> guard(m_Mutex);
-		m_ProgramsCache = m_Programs; // I hope the guard is destroyed after the copy, not sure tho TODO: Check this
-		m_HasChanged = false;
+		{
+			std::lock_guard<std::mutex> guard(m_Mutex);
+			m_ProgramsCache = m_Programs; // I hope the guard is destroyed after the copy, not sure tho TODO: Check this
+			m_HasChanged = false;
+		} // force guard release
+
+		std::map<std::wstring, TaskbarItem> group;
+
+		for(auto& item : m_ProgramsCache)
+		{
+			item.m_GroupCount = 1;
+			if(group.find(item.m_ProgramDescription) == group.end())
+			{
+				group[item.m_ProgramDescription] = item;
+			}
+			else
+			{
+				group[item.m_ProgramDescription].m_GroupCount++;
+			}
+			group[item.m_ProgramDescription].m_Items.push_back(item);
+		}
+
+		m_ProgramsGroupedCache.clear();
+		for (auto& it : group) m_ProgramsGroupedCache.push_back(it.second);
 	}
-	return m_ProgramsCache;
+	return grouped ? m_ProgramsGroupedCache : m_ProgramsCache;
 }
+

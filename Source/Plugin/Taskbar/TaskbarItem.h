@@ -16,9 +16,11 @@ struct TaskbarItem
 	HWND m_Hwnd = {0};
 	LONG m_ProcessId = 0;
 	UINT m_VirtualDesktopId = 0;
+	UINT m_GroupCount = 0;
 	bool m_IsUWP = false;
 	bool m_IsPinned = false;
 	bool m_IsVisible = false;
+	std::vector<TaskbarItem> m_Items;
 
 	std::wstring& GetIconPath()
 	{

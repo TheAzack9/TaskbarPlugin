@@ -20,7 +20,7 @@ public:
 	Taskbar();
 	~Taskbar();
 
-	std::vector<TaskbarItem>* GetTaskbarItems();
+	std::vector<TaskbarItem>* GetTaskbarItems(bool grouped = false);
 
 	// Non-copyable
 	Taskbar(Taskbar const&) = delete;
