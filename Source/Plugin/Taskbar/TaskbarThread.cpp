@@ -305,9 +305,10 @@ void TaskbarThread::Update(TaskbarThread* taskbar, bool runOnce)
 				else // Is UWP app
 				{
 					isUwp = true;
-					HWND child = FindWindowEx(hwnd, NULL, L"Windows.UI.Core.CoreWindow", windowTitle.c_str());
+					HWND child = FindWindowEx(hwnd, NULL, L"Windows.UI.Core.CoreWindow", NULL);
 					if (child)
 					{
+						std::wstring windowTitle = GetWindowTitle(child);
 						auto cprocId = GetProcessId(child);
 						HANDLE cprocHandle = GetProcessHandle(cprocId);
 						uwpLocation = GetProcessPath(cprocHandle);
@@ -461,15 +462,15 @@ std::vector<TaskbarItem>& TaskbarThread::GetPrograms(bool grouped)
 		for(auto& item : m_ProgramsCache)
 		{
 			item.m_GroupCount = 1;
-			if(group.find(item.m_ProgramDescription) == group.end())
+			if(group.find(item.m_ProgramPath) == group.end())
 			{
-				group[item.m_ProgramDescription] = item;
+				group[item.m_ProgramPath] = item;
 			}
 			else
 			{
-				group[item.m_ProgramDescription].m_GroupCount++;
+				group[item.m_ProgramPath].m_GroupCount++;
 			}
-			group[item.m_ProgramDescription].m_Items.push_back(item);
+			group[item.m_ProgramPath].m_Items.push_back(item);
 		}
 
 		m_ProgramsGroupedCache.clear();

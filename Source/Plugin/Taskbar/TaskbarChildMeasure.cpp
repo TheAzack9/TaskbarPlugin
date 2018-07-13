@@ -15,15 +15,15 @@ bool TaskbarChildMeasure::Reload()
 	auto convertEnum = [](const std::wstring& str)
 	{
 		if (Utility::IsEqual(str.c_str(), L"ProcessName")) return Type::ProcessName;
-		else if (Utility::IsEqual(str.c_str(), L"WindowTitle")) return Type::WindowTitle;
-		else if (Utility::IsEqual(str.c_str(), L"WindowClass")) return Type::WindowClass;
-		else if (Utility::IsEqual(str.c_str(), L"Name")) return Type::Name;
-		else if (Utility::IsEqual(str.c_str(), L"Icon")) return Type::Icon;
-		else if (Utility::IsEqual(str.c_str(), L"ProcessId")) return Type::ProcessId;
-		else if (Utility::IsEqual(str.c_str(), L"Path")) return Type::Path;
-		else if (Utility::IsEqual(str.c_str(), L"VirtualDesktopId")) return Type::VirtualDesktopId;
-		else if (Utility::IsEqual(str.c_str(), L"IsPinned")) return Type::IsPinned;
-		else if (Utility::IsEqual(str.c_str(), L"GroupCount")) return Type::GroupCount; // TODO: error if parent != grouped
+		if (Utility::IsEqual(str.c_str(), L"WindowTitle")) return Type::WindowTitle;
+		if (Utility::IsEqual(str.c_str(), L"WindowClass")) return Type::WindowClass;
+		if (Utility::IsEqual(str.c_str(), L"Name")) return Type::Name;
+		if (Utility::IsEqual(str.c_str(), L"Icon")) return Type::Icon;
+		if (Utility::IsEqual(str.c_str(), L"ProcessId")) return Type::ProcessId;
+		if (Utility::IsEqual(str.c_str(), L"Path")) return Type::Path;
+		if (Utility::IsEqual(str.c_str(), L"VirtualDesktopId")) return Type::VirtualDesktopId;
+		if (Utility::IsEqual(str.c_str(), L"IsPinned")) return Type::IsPinned;
+		if (Utility::IsEqual(str.c_str(), L"GroupCount")) return Type::GroupCount; // TODO: error if parent != grouped
 		return Type::Unknown;
 	};
 
